@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  node:
+    image: node:18-alpine
+    container_name: shopper_challenge_node
+    tty: true
+    stdin_open: true
+    command: sh
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - 3000:3000
+    env_file: .env
+    environment:
+      MYSQLHOST: db
+  db:
+    image: mysql:8.0.32
+    container_name: shopper_challenge_db
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 3306:3306
+    environment:
+    - MYSQL_ROOT_PASSWORD=${MYSQLPASSWORD}
