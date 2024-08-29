@@ -2,7 +2,7 @@
 FROM node:18-alpine
 
 # Mudar para o diretório de trabalho /app-backend
-WORKDIR /app-backend
+WORKDIR /backend
 
 # Copiar os package.json e package-lock.json para o container
 COPY package*.json .

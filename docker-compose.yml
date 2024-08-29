@@ -6,10 +6,10 @@ services:
     build: ./backend
     ports:
       - 3001:3001
-    working_dir: /app-backend
+    working_dir: /backend
     command: dev
     volumes:
-      - ./backend/src:/app-backend/src
+      - ./backend/src:/backend/src
     depends_on:
       db:
         condition: service_healthy
