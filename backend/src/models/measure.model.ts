@@ -13,8 +13,8 @@ export default class MeasureModel implements IMeasureModel {
 
     async getMeasureByCustomerDateAndType(customer_code: string, date: Date, type: string): Promise<Measure | null> {
         const { year, month } = { 
-            year: date.getFullYear(), 
-            month: date.getMonth() + 1
+            year: new Date(date).getFullYear(), 
+            month: new Date(date).getMonth() + 1
         };
 
         const measure = await this._model.findOne({
