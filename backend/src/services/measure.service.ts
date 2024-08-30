@@ -10,6 +10,7 @@ import path from "path";
 import { newMeasureResponse } from "../types/NewMeasureResponse";
 import { v4 as v4uuid } from 'uuid';
 import { ConfirmMeasure } from "../types/ConfirmMeasure";
+import { validationsConfirmMeasure } from "../validations/validationsConfirmMeasure";
 
 export default class MeasureService {
     constructor(private _measureModel: IMeasureModel = new MeasureModel()) {}
@@ -93,6 +94,14 @@ export default class MeasureService {
     }
 
     async confirmMeasure(confirmData: ConfirmMeasure): Promise<ServiceResponse<{ success: boolean }>> {
+        // Validate the ConfirmData values
+        const error = validationsConfirmMeasure(confirmData);
+        if (error) return {
+            status: error.status,
+            data: { error_code: 'INVALID_DATA', error_description: error.message }
+        };
+
+        // Verify if the measure exists and if it has already been confirmed
         const { measure_uuid, confirmed_value } = confirmData;
         const measure = await this._measureModel.getMeasureByUUID(measure_uuid);
         if (!measure) {
@@ -108,7 +117,9 @@ export default class MeasureService {
             };
         }
 
+        // Confirm and update the measure in the database
         this._measureModel.confirmMeasure(measure_uuid, confirmed_value);
+        
         return { status: 'SUCCESSFUL', data: { success: true } };
     }
 
