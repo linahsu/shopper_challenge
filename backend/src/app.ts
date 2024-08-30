@@ -19,6 +19,10 @@ app.post("/", (req: Request, res: Response) => {
     measureController.createMeasure(req, res);
 });
 
+app.patch("/", (req: Request, res: Response) => {
+    measureController.confirmMeasure(req, res);
+});
+
 app.get("/:customer_code/list", (req: Request, res: Response) => {
     measureController.getMeasureByCustomer(req, res);
 });

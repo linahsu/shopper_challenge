@@ -10,6 +10,18 @@ export default class MeasureModel implements IMeasureModel {
         await this._model.create(measureData);
     }
 
+    async getMeasureByUUID(uuid: string): Promise<Measure | null> {
+        const measure = await this._model.findOne({ where: { measure_uuid: uuid } });
+        return measure;
+    }
+
+    async confirmMeasure(uuid: string, confirmed_value: number): Promise<void> {
+        await this._model.update(
+            { has_confirmed: true, measure_value: confirmed_value },
+            { where: { measure_uuid: uuid } }
+        );
+    }
+
     async getMeasureByCustomerDateAndType(customer_code: string, date: Date, type: string): Promise<Measure | null> {
         const { year, month } = { 
             year: new Date(date).getFullYear(), 
