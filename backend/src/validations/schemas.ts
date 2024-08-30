@@ -9,4 +9,9 @@ const createMeasureSchema = Joi.object({
     measure_type: Joi.string().required(),
 });
 
-export { createMeasureSchema };
+const confirmMeasureSchema = Joi.object({
+    measure_uuid: Joi.string().required(),
+    confirmed_value: Joi.number().required(),
+});
+
+export { createMeasureSchema, confirmMeasureSchema };

@@ -10,6 +10,11 @@ export default class MeasureController {
         return res.status(mapStatusHttps(status)).json(data);
     }
 
+    async confirmMeasure(req: Request, res: Response) {
+        const { status, data } = await this._measureService.confirmMeasure(req.body);
+        return res.status(mapStatusHttps(status)).json(data);
+    }
+
     async getMeasureByCustomer(req: Request, res: Response) {
         const customer_code = req.params.customer_code;
         const type = req.query.measure_type as string | null;

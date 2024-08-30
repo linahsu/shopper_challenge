@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import path from "path";
 import { newMeasureResponse } from "../types/NewMeasureResponse";
 import { v4 as v4uuid } from 'uuid';
+import { ConfirmMeasure } from "../types/ConfirmMeasure";
+import { validationsConfirmMeasure } from "../validations/validationsConfirmMeasure";
 
 export default class MeasureService {
     constructor(private _measureModel: IMeasureModel = new MeasureModel()) {}
@@ -89,6 +91,36 @@ export default class MeasureService {
             measure_uuid,
         } };
 
+    }
+
+    async confirmMeasure(confirmData: ConfirmMeasure): Promise<ServiceResponse<{ success: boolean }>> {
+        // Validate the ConfirmData values
+        const error = validationsConfirmMeasure(confirmData);
+        if (error) return {
+            status: error.status,
+            data: { error_code: 'INVALID_DATA', error_description: error.message }
+        };
+
+        // Verify if the measure exists and if it has already been confirmed
+        const { measure_uuid, confirmed_value } = confirmData;
+        const measure = await this._measureModel.getMeasureByUUID(measure_uuid);
+        if (!measure) {
+            return {
+                status: 'NOT_FOUND',
+                data: { error_code: 'MEASURE_NOT_FOUND', error_description: 'Leitura do mês já realizada' }
+            };
+        }
+        if (measure.has_confirmed) {
+            return {
+                status: 'DOUBLE_REPORT',
+                data: { error_code: 'CONFIRMATION_DUPLICATE', error_description: 'Leitura do mês já realizada' }
+            };
+        }
+
+        // Confirm and update the measure in the database
+        this._measureModel.confirmMeasure(measure_uuid, confirmed_value);
+        
+        return { status: 'SUCCESSFUL', data: { success: true } };
     }
 
     async getMeasureByCustomer(customer_code: string, type: string | null): Promise<ServiceResponse<MeasureByCustomer>> {
