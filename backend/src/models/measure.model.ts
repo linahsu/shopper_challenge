@@ -36,9 +36,11 @@ export default class MeasureModel implements IMeasureModel {
     async getMeasureByCustomer(customer_code: string, type: string | null): Promise<Measure[] | null> {
         if (type) {
             const measures = await this._model.findAll({ where: { customer_code: customer_code, measure_type: type } });
+            if (measures.length === 0) return null;
             return measures;
         }
         const measures = await this._model.findAll({ where: { customer_code: customer_code } });
+        if (measures.length === 0) return null;
         return measures;
     }
 }

@@ -19,7 +19,9 @@ export default class MeasureService {
     async createMeasure(measureData: MeasureData): Promise<ServiceResponse<Measure>> {
         // Validate the MeasureData values
         const error = validationsCreateMeasure(measureData);
-        if (error) return { status: error.status, data: { message: error.message } };
+        if (error) return {
+            status: error.status,
+            data: { error_code: 'INVALID_DATA ', error_description: error.message } };
 
         // Verify if there's already a measure of the same type in the same month
         const {image, customer_code, measure_datetime, measure_type} = measureData;
@@ -28,7 +30,10 @@ export default class MeasureService {
         if (existingMeasure) {
             return {
                 status: 'DOUBLE_REPORT',
-                data: { message: 'There is already a measure of this type in the same month' }
+                data: {
+                    error_code: 'DOUBLE_REPORT',
+                    error_description: 'There is already a measure of this type in the same month'
+                }
             };
         }
 
@@ -47,11 +52,20 @@ export default class MeasureService {
     }
 
     async getMeasureByCustomer(customer_code: string, type: string | null): Promise<ServiceResponse<MeasureByCustomer>> {
+        if (type !== 'WATER' && type !== 'GAS') {
+            return {
+                status: 'INVALID_DATA',
+                data: { error_code: 'INVALID_TYPE', error_description: 'Tipo de medição não permitida' }
+            };
+        }
         const measures = await this._measureModel.getMeasureByCustomer(customer_code, type);
         if (!measures) {
-            return { status: 'MEASURES_NOT_FOUND', data: { message: 'Nenhuma leitura encontrada' } };
+            return {
+                status: 'MEASURES_NOT_FOUND',
+                data: { error_code: 'MEASURES_NOT_FOUND', error_description: 'Nenhuma leitura encontrada' }
+            };
         }
-
+        
         const formatedMeasures = {
             customer_code,
             measures: measures.map(measure => ({
