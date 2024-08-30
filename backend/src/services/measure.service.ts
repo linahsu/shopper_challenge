@@ -5,15 +5,43 @@ import { MeasureByCustomer } from "../types/MeasureByCustomer";
 import { MeasureData } from "../types/MeasureData";
 import { ServiceResponse } from "../types/ServiceResponse";
 import { validationsCreateMeasure } from "../validations/validationsCreateMeasure";
-import { writeFileSync } from 'fs';
+import genAI from "../utils/geminiAPI";
+import fs from "fs";
+import path from "path";
 
 export default class MeasureService {
     constructor(private _measureModel: IMeasureModel = new MeasureModel()) {}
 
-    // Função para converter base64 para arquivo temporário
-    saveBase64Image(base64: string, filePath: string): void {
-        const base64Data = base64.replace(/^data:image\/png;base64,/, "");
-        writeFileSync(filePath, base64Data, 'base64');
+    // Converts base64 to a temporary file, creates temporary url and extract image content with Gemini API Vision
+    async createMeasureWithGemini(image: string) {
+        // Decodificar a imagem base64 e salvá-la em um arquivo temporário
+        const tempFilePath = path.join(__dirname, "temp_image.jpg");
+        const imageBuffer = Buffer.from(image, 'base64');
+        fs.writeFileSync(tempFilePath, imageBuffer);
+
+        // Fazer upload do arquivo para a Gemini API
+        const uploadResponse = await genAI.uploadFile(tempFilePath, {
+            mimeType: "image/jpeg",
+            displayName: "meter image",
+        });
+
+        const imageUrl = uploadResponse.file.uri;
+        const measureValue = await this.extractMeasureValue(tempFilePath);
+    }
+
+    async extractMeasureValue(tempFilePath: string) {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+
+        const prompt = "Extrair o valor do medidor de água da imagem fornecida.";
+
+        // Gerar o conteúdo usando o modelo
+        const generatedContent = await model.generateContent([prompt, tempFilePath]);
+
+        // Processar a resposta para extrair o valor do medidor
+        const responseText = await generatedContent.response.text();
+        const measureValue = parseInt(responseText, 10);
+
+        return isNaN(measureValue) ? 0 : measureValue; // Retornar 0 se não conseguir converter o valor
     }
 
     async createMeasure(measureData: MeasureData): Promise<ServiceResponse<Measure>> {
@@ -32,7 +60,7 @@ export default class MeasureService {
                 status: 'DOUBLE_REPORT',
                 data: {
                     error_code: 'DOUBLE_REPORT',
-                    error_description: 'There is already a measure of this type in the same month'
+                    error_description: 'Leitura do mês já realizada'
                 }
             };
         }
