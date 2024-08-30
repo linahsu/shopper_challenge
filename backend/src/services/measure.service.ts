@@ -46,8 +46,8 @@ export default class MeasureService {
 
     }
 
-    async getMeasureByCustomer(customer_code: string): Promise<ServiceResponse<MeasureByCustomer>> {
-        const measures = await this._measureModel.getMeasureByCustomer(customer_code);
+    async getMeasureByCustomer(customer_code: string, type: string | null): Promise<ServiceResponse<MeasureByCustomer>> {
+        const measures = await this._measureModel.getMeasureByCustomer(customer_code, type);
         if (!measures) {
             return { status: 'MEASURES_NOT_FOUND', data: { message: 'Nenhuma leitura encontrada' } };
         }

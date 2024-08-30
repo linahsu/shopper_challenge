@@ -1,6 +1,6 @@
 export type ServiceResponseMessage = { message: string }
 
-export type ServiceResponseErrorStatus = 'INVALID_DATA' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'DOUBLE_REPORT' | 'MEASURES_NOT_FOUND';
+export type ServiceResponseErrorStatus = 'INVALID_DATA' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'DOUBLE_REPORT' | 'MEASURES_NOT_FOUND' | 'INVALID_TYPE';
 
 export type ServiceResponseSuccessStatus = 'SUCCESSFUL' | 'CREATED';
 

@@ -7,7 +7,8 @@ const measureController = new MeasureController();
 measureRouter.post("/", (req: Request, res: Response) => {
     measureController.createMeasure(req, res);
 });
-measureRouter.get("/:customer_code", (req: Request, res: Response) => {
+
+measureRouter.get("/:customer_code/list", (req: Request, res: Response) => {
     measureController.getMeasureByCustomer(req, res);
 });
 

@@ -11,7 +11,9 @@ export default class MeasureController {
     }
 
     async getMeasureByCustomer(req: Request, res: Response) {
-        const { status, data } = await this._measureService.getMeasureByCustomer(req.params.customer_code);
+        const customer_code = req.params.customer_code;
+        const type = req.query.measure_type as string | null;
+        const { status, data } = await this._measureService.getMeasureByCustomer(customer_code, type);
         return res.status(mapStatusHttps(status)).json(data);
     }
 }
