@@ -6,6 +6,7 @@ export default function mapStatusHttps(status: string): number {
     SUCCESSFUL: 200,
     CREATED: 201,
     DOUBLE_REPORT: 409,
+    MEASURES_NOT_FOUND: 404,
   };
   return statusMap[status] || 500;
 }

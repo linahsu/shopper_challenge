@@ -32,4 +32,10 @@ export default class MeasureModel implements IMeasureModel {
 
         return measure;
     }
+
+    async getMeasureByCustomer(customer_code: string): Promise<Measure[] | null> {
+        const measures = await this._model.findAll({ where: { customer_code: customer_code } });
+
+        return measures;
+    }
 }

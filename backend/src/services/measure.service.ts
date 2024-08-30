@@ -1,6 +1,7 @@
 import { IMeasureModel } from "../Interfaces/IModel";
 import MeasureModel from "../models/measure.model";
 import { Measure } from "../types/Measure";
+import { MeasureByCustomer } from "../types/MeasureByCustomer";
 import { MeasureData } from "../types/MeasureData";
 import { ServiceResponse } from "../types/ServiceResponse";
 import { validationsCreateMeasure } from "../validations/validationsCreateMeasure";
@@ -35,4 +36,23 @@ export default class MeasureService {
 
     }
 
+    async getMeasureByCustomer(customer_code: string): Promise<ServiceResponse<MeasureByCustomer>> {
+        const measures = await this._measureModel.getMeasureByCustomer(customer_code);
+        if (!measures) {
+            return { status: 'MEASURES_NOT_FOUND', data: { message: 'Nenhuma leitura encontrada' } };
+        }
+
+        const formatedMeasures = {
+            customer_code,
+            measures: measures.map(measure => ({
+                measure_uuid: measure.measure_uuid,
+                measure_datetime: measure.measure_datetime,
+                measure_type: measure.measure_type,
+                has_confirmed: measure.has_confirmed,
+                image_url: measure.image_url,
+            })
+        )};
+
+        return { status: 'SUCCESSFUL', data: formatedMeasures };
+    }
 }
