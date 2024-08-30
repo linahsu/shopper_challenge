@@ -1,9 +1,9 @@
 import { Model, QueryInterface, DataTypes } from "sequelize";
-import { Measures } from "../../types/Measures";
+import { Measure } from "../../types/Measure";
 
 export default {
     up(queryInterface: QueryInterface) {
-        return queryInterface.createTable<Model<Measures>>("measures", {
+        return queryInterface.createTable<Model<Measure>>("measures", {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
