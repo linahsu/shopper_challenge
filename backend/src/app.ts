@@ -8,5 +8,6 @@ const app = express();
 app.use(express.json());
 router.use('/measures', measureRouter);
 
+app.get('/', (req, res) => res.json({ ok: true }));
 
 export default app;
