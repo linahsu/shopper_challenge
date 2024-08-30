@@ -1,4 +1,4 @@
-import fs from "fs";
+import * as fs from 'fs';
 
 function convertImageToBase64(filePath: string): string {
     const imageBuffer = fs.readFileSync(filePath);

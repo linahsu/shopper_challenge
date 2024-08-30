@@ -10,6 +10,7 @@ class SequelizeMeasureModel extends Model<InferAttributes<SequelizeMeasureModel>
     declare measure_uuid: string;
     declare measure_datetime: Date;
     declare measure_type: string;
+    declare measure_value: number;
     declare has_confirmed: boolean;
     declare image_url: string;
     declare customer_code: string;
@@ -33,6 +34,10 @@ SequelizeMeasureModel.init({
     },
     measure_type: {
         type: DataTypes.STRING,
+        allowNull: false,
+    },
+    measure_value: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     has_confirmed: {

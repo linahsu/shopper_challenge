@@ -1,13 +1,14 @@
 import { IMeasureModel } from "../Interfaces/IModel";
 import MeasureModel from "../models/measure.model";
-import { Measure } from "../types/Measure";
 import { MeasureByCustomer } from "../types/MeasureByCustomer";
 import { MeasureData } from "../types/MeasureData";
 import { ServiceResponse } from "../types/ServiceResponse";
 import { validationsCreateMeasure } from "../validations/validationsCreateMeasure";
 import { fileManager, genAI } from "../utils/geminiAPI";
-import fs from "fs";
+import * as fs from 'fs';
 import path from "path";
+import { newMeasureResponse } from "../types/NewMeasureResponse";
+import { v4 as v4uuid } from 'uuid';
 
 export default class MeasureService {
     constructor(private _measureModel: IMeasureModel = new MeasureModel()) {}
@@ -18,15 +19,17 @@ export default class MeasureService {
 
         // Decode image base64 and save it in a temporary file
         const tempFilePath = path.join(__dirname, "temp_image.jpg");
-        const imageBuffer = Buffer.from(image, 'base64');
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+        const imageBuffer = Buffer.from(base64Data, 'base64');
         fs.writeFileSync(tempFilePath, imageBuffer);
 
-        // Fazer upload do arquivo para a Gemini API
+        // Upload image to Gemini API
         const uploadResponse = await fileManager.uploadFile(tempFilePath, {
             mimeType: "image/jpeg",
             displayName: "meter image",
         });
         
+        // Generate content with Gemini API Vision
         const geminiResult = await model.generateContent([
             {
               fileData: {
@@ -39,12 +42,11 @@ export default class MeasureService {
 
         const imageUrl = uploadResponse.file.uri;
         const measureValue = Number(geminiResult.response.text())
-        console.log(geminiResult);
 
         return { imageUrl, measureValue };
     }
 
-    async createMeasure(measureData: MeasureData): Promise<ServiceResponse<Measure>> {
+    async createMeasure(measureData: MeasureData): Promise<ServiceResponse<newMeasureResponse>> {
         // Validate the MeasureData values
         const error = validationsCreateMeasure(measureData);
         if (error) return {
@@ -65,17 +67,26 @@ export default class MeasureService {
             };
         }
 
-        // Extrai o valor da imagem com Gemini API Vision
+        // Extract image value with Gemini API Vision
         const geminiResult = await this.createMeasureWithGemini(image);
+        const { imageUrl, measureValue } = geminiResult;
+        const measure_uuid = v4uuid();
+
+        // Save the measure in the database
+        this._measureModel.createMeasure({
+            measure_uuid,
+            measure_datetime,
+            measure_type,
+            measure_value: measureValue,
+            has_confirmed: false,
+            image_url: imageUrl,
+            customer_code,
+        });
 
         return { status: 'SUCCESSFUL', data: {
-            id: 1,
-            measure_uuid: '8a6e0804-2bd0-4672-b79d-d97027f9071a',
-            measure_datetime: new Date('2023-08-30'),
-            measure_type: 'WATER',
-            has_confirmed: true,
-            image_url: 'https://example.com/image1.jpg',
-            customer_code: '12345'
+            image_url: imageUrl,
+            measure_value: measureValue,
+            measure_uuid,
         } };
 
     }

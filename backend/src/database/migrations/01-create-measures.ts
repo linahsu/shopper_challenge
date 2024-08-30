@@ -23,6 +23,10 @@ export default {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
+            measure_value: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
             has_confirmed: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
