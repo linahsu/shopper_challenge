@@ -13,8 +13,10 @@ export default class MeasureService {
     constructor(private _measureModel: IMeasureModel = new MeasureModel()) {}
 
     // Converts base64 to a temporary file, creates temporary url and extract image content with Gemini API Vision
-    async createMeasureWithGemini(image: string) {
-        // Decodificar a imagem base64 e salvá-la em um arquivo temporário
+    async createMeasureWithGemini(image: string) { 
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+
+        // Decode image base64 and save it in a temporary file
         const tempFilePath = path.join(__dirname, "temp_image.jpg");
         const imageBuffer = Buffer.from(image, 'base64');
         fs.writeFileSync(tempFilePath, imageBuffer);
@@ -24,24 +26,22 @@ export default class MeasureService {
             mimeType: "image/jpeg",
             displayName: "meter image",
         });
+        
+        const geminiResult = await model.generateContent([
+            {
+              fileData: {
+                mimeType: uploadResponse.file.mimeType,
+                fileUri: uploadResponse.file.uri
+              }
+            },
+            { text: "Extrair o valor do medidor da imagem fornecida." },
+          ]);
 
         const imageUrl = uploadResponse.file.uri;
-        const measureValue = await this.extractMeasureValue(tempFilePath);
-    }
+        const measureValue = Number(geminiResult.response.text())
+        console.log(geminiResult);
 
-    async extractMeasureValue(tempFilePath: string) {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
-
-        const prompt = "Extrair o valor do medidor de água da imagem fornecida.";
-
-        // Gerar o conteúdo usando o modelo
-        const generatedContent = await model.generateContent([prompt, tempFilePath]);
-
-        // Processar a resposta para extrair o valor do medidor
-        const responseText = await generatedContent.response.text();
-        const measureValue = parseInt(responseText, 10);
-
-        return isNaN(measureValue) ? 0 : measureValue; // Retornar 0 se não conseguir converter o valor
+        return { imageUrl, measureValue };
     }
 
     async createMeasure(measureData: MeasureData): Promise<ServiceResponse<Measure>> {
@@ -66,6 +66,7 @@ export default class MeasureService {
         }
 
         // Extrai o valor da imagem com Gemini API Vision
+        const geminiResult = await this.createMeasureWithGemini(image);
 
         return { status: 'SUCCESSFUL', data: {
             id: 1,
@@ -80,7 +81,7 @@ export default class MeasureService {
     }
 
     async getMeasureByCustomer(customer_code: string, type: string | null): Promise<ServiceResponse<MeasureByCustomer>> {
-        if (type !== 'WATER' && type !== 'GAS') {
+        if (type && type !== 'WATER' && type !== 'GAS') {
             return {
                 status: 'INVALID_DATA',
                 data: { error_code: 'INVALID_TYPE', error_description: 'Tipo de medição não permitida' }
