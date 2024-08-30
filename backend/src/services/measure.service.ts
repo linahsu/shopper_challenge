@@ -5,7 +5,7 @@ import { MeasureByCustomer } from "../types/MeasureByCustomer";
 import { MeasureData } from "../types/MeasureData";
 import { ServiceResponse } from "../types/ServiceResponse";
 import { validationsCreateMeasure } from "../validations/validationsCreateMeasure";
-import genAI from "../utils/geminiAPI";
+import { fileManager, genAI } from "../utils/geminiAPI";
 import fs from "fs";
 import path from "path";
 
@@ -20,7 +20,7 @@ export default class MeasureService {
         fs.writeFileSync(tempFilePath, imageBuffer);
 
         // Fazer upload do arquivo para a Gemini API
-        const uploadResponse = await genAI.uploadFile(tempFilePath, {
+        const uploadResponse = await fileManager.uploadFile(tempFilePath, {
             mimeType: "image/jpeg",
             displayName: "meter image",
         });
