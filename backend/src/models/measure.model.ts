@@ -11,7 +11,7 @@ export default class MeasureModel implements IMeasureModel {
         return measure;
     }
 
-    async getMeasureByCustomer(customer_code: string, date: Date, type: string): Promise<Measure | null> {
+    async getMeasureByCustomerDateAndType(customer_code: string, date: Date, type: string): Promise<Measure | null> {
         const { year, month } = { 
             year: date.getFullYear(), 
             month: date.getMonth() + 1
@@ -29,7 +29,7 @@ export default class MeasureModel implements IMeasureModel {
                 }
             }
         });
-        
+
         return measure;
     }
 }
